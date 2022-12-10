@@ -1,0 +1,66 @@
+### Set up -Done
+
+## MVC Architecture - Done
+
+the route welcome the controller and controller takes care of buisiness logic
+
+## DB configuration -
+
+we need 2 packages to set up our database
+
+1. Sequelize = yarn add sequelize
+2. sqlite3= yarn add sqlite3
+   create a database config folder inside the src, inside it create an index.ts
+   on your own, learn how to use prisma, mongoose database. currently this project is running on sequelize.
+
+## MVC modelling (How our users communicate with the database)
+
+create a model folder inside the src, create a user model in side the model folder
+USE a package called "uuid" (it's a unique generated id for all users without conflicting each other)
+you can't create a model without an interface
+sorting is necessary cos it helps to strengthen our database security. Ensure the sort you're using is not too much for the app to decode to permit your users to have access to their data. As much as sort helps to encrypt your user password.
+Ensure to gothrough evdry UI design before proceeding to writing the backend code.
+
+You have to extend model in order to be able to create a model
+
+## Helper function Joi Validation, Password Hashing, salt etc
+
+we create a folder called utils, housing all our helper function (utilities)
+inside it create utility.ts file
+install joi dependency = "yarn add joi" to validate the user
+install bcrypt dependency = "yarn add bcrypt" for password hashing
+install json web-token = "yarn add jsonwebtoken" to generate every user a unique token and when the user leaves the app the token generatred expired
+
+Create a schema for the user inside the utility.ts file, set it to equal Joi.objects().keys({}) pass in the data you want to validate which is the email,phone and password and confirm password, go back to the usercontroller ceate a register function make it asynchronous and put it inside a try/catch, request the email,phone and password and confirm password through destructuring from the body(req.body) ,store the schema in a variable and call it with dot validate(e.g registerSchema.validate), then pass in the req.body and the option(the option parameter is used to remove the slash infront of the validate email error message)parameters, to check for error in the validate function use your variable name.error in a conditional statement then return a response with a status of 400 and a json error message which takes variable name.error.details[0].message...you have to create the option function in the utiltiy.ts file and export it before passinf it into the validate function in the user controller.
+
+## Generate salt
+
+craete an asynchronous function in the utiliy.ts file return bcrypt.genSalt(),then import and call the function in the usercontroller ,store it in a variable and await the call
+
+## Generate password
+
+craete an asynchronous function in the utiliy.ts file return bcrypt.hash() passing in the password and the salt,then import and call the function in the usercontroller, store it in a variable and await the call
+
+## Generate otp
+
+create a notification.ts file in your utils folder, inside it generate otp using math.floor and math.random
+then set the time it will expire by getting the date with new Date(),setTime() and getTime,then convert the time to seconds by multiplying the time you want to set it to by 60 and then by 1000,return otp and expiry by destructuring it and then import and call the function in the users controller without awaiting it.
+
+## check if the user exists
+
+import the userinstance from the model and then use the findOne()method. But if user does not exist create one by using the userInstance.create()method...which will have an object,modelling all the requirements for the user from the model interface. we'll set the values for each of the keys and install uuid(yarn add uuid) for the id, import it(v4 as uuidv4) to set the id. store the data in a variable, set a response and pass in the variable name,write the else response as well.
+
+## verify user identity and phone number with sms
+
+do yarn add twilio, signup with them if you have not, get the accountsid, the auth token and the fromadminnumber, put it in your environmental variable(.env), add dotenv(yarn add dotenv),immport dotenv in your config folder, and store the accountsid,authtoken and fromadminphone in a variable processing it from the env file(i.e process.env.what you saved it as) export them, then go to your notification.ts file, import accountsid,authtoken and fromadminphone, create an asynchronous function to send otp to user store it in a variable using const, pass in otp and tophonenumber as the parameter, then require twilio using the sample in the documentation,make sure you await your client.messages.create and also save it in a variable. the client.messages.create takes an object with body(what you want the person getting the otp to see, so u can have something like:`Your otp is ${otp}`),to(set it to the tophoneNumber) and from (fromadminphone)as the key, then return your variable name.
+
+## veify user identity with mail
+
+go to your gmail under security click on the icon below two step verification,go to app password,enter a name for your app,get the gmailuser, the gmailpass, put it in your environmental variable(.env),go to your config folder and store the gmailuser and the gmailpass in a variable processing it from the env file(i.e process.env.what you saved it as) export them, then go to your notification.ts file, import gmailuser and the gmailpass, do yarn add nodemailer,import it in the notification.ts file,import the types as well, create a function to use the nodemailer using .createTransport()method, which takes in an objet with keys of service(the type of mail as value),auth(which is an object as keys of user and pass(the values will be the gmail pass and user respectively)), then tls(which is used to tell the server to not rejectunauthorized email,it is an object that takes in rejectUauthorized and sets it to false) create an asynchronous function to send mail to user store it in a variable using const.
+
+## a shorter way to compare the existing password with the entered password
+
+bcrypt.compare(password,User.password)
+
+create a middleware thwt will help you protect all your routes
+for middleware you can either use request. header or req.cookie(req.cookie.jwt)
